@@ -55,18 +55,38 @@ void traversalDir(string dirPath)
 			strcpy(curPath, filePath.c_str());
 			filesPathes[0] = curPath;
 
+			int fd[2];
+			if (pipe(fd) == -1)
+				err("create pipe error");
+			filesPathes[1] = sprintf();
+			
+
 			pid_t pid;	
 			if ((pid = fork()) < 0)
 			{
 				err("create sub process error");
 			}
 			else if (pid == 0)  //child
-			{	
-				if (execv("./generateMap", filesPathes) == -1)
-					err("generateMap error");
+			{
+				if (close(fd[0]) == -1) err("child close pipe read port error");
+				WordMap *curWordMap = 0;
+			    WordMap *totalWordMap = 0;
+			   	for (int i=0; i<argc; i++)
+				{
+		    		*curWordMap = GenerateWordMapByFileName(argv[i]);
+					if (totalWordMap == 0)
+				    	*totalWordMap = *curWordMap;
+				    else
+				   		(*totalWordMap).MergeWordMaps(*curWordMap);
+				}
+				
+			//	if (execv("./generateMap", filesPathes) == -1)
+		   	//		err("generateMap error");
 			}
 			else
 			{
+				if (close(fd[1] == -1)) err("parent close pipe write port error");
+
 			}
 
 
