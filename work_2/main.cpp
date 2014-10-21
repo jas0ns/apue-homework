@@ -18,15 +18,15 @@ int main(int argc, char **argv)
 	//WordMap wordMap = GenerateWordMapByFileName("./test.txt");
 	WordMap *totalWordMap = 0;
 
+	if (pipe(fd) == -1)
+		err("create pipe error");
+	
 	pid_t pid;
 	if ((pid = fork()) < 0)
 		err("create read process error");
 	
 	if (pid == 0)  // child
 	{
-		if (pipe(fd) == -1)
-			err("create pipe error");
-	
 		if (close(fd[1] == -1)) err("parent close pipe write port error");
 
 		while(1)
@@ -115,7 +115,7 @@ void traversalDir(string dirPath)
 				   			(*totalWordMap).MergeWordMaps(*curWordMap);
 					}
 					
-					if (write(fd[1], totalWordMap, sizeof(WordMap *)) == -1)
+					if (write(fd[1], &totalWordMap, sizeof(WordMap *)) == -1)
 						err("write WordMap* to the pipe error");
 					
 					return;
