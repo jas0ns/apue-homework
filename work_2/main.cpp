@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <dirent.h>
+#include <sys/stat.h>
 #include <string>
 using namespace std;
 
@@ -94,6 +95,7 @@ void traversalDir(string dirPath)
 				char curPath[MAXLOFFP];
 				strcpy(curPath, filePath.c_str());
 				filesPathes[fpi++] = curPath;
+				filesTotalSize += buff.st_size;
 			}
 			else
 			{	
@@ -125,19 +127,6 @@ void traversalDir(string dirPath)
 				strcpy(curPath, filePath.c_str());
 				filesPathes[fpi] = curPath;
 			}
-
-
-						
-
-
-		//	long totalSize = buff.st_size;
-		//	char *filePathes[10]; 
-		//	while (totalSize >= 1024*1024)
-		//	{
-		//		fork();
-		//		if ()
-		//	}
-			
 		}
 	}
 
