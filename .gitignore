@@ -1,5 +1,5 @@
 *.o
 *.out
 *.swp
-*/prog/*
-*/log
+prog/
+log
