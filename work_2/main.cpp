@@ -120,7 +120,6 @@ void traversalDir(string dirPath)
 					if (write(fd[1], &totalWordMap, sizeof(WordMap *)) == -1)
 						err("write WordMap* to the pipe error");
 					
-					return;
 				}
 				fpi = 0;
 				char curPath[MAXLOFFP];
@@ -133,7 +132,5 @@ void traversalDir(string dirPath)
 	if (closedir(dir) == -1)
 		err("closedir error");
 }
-
-
 
 
