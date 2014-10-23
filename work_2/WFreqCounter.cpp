@@ -12,7 +12,7 @@ WordMap GenerateWordMapByFileName(const char *fileName)
 	int fd;
 	char buff[BUFFSIZE];
 	WordMap wordMap;
-	cout << endl << fileName << endl;
+	cout << fileName << endl;
 	if ((fd = open(fileName, O_RDONLY)) == -1)
 		err("open file error");
 	
