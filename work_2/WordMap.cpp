@@ -23,8 +23,9 @@ void WordMap::RecordWord(string word, long time)
 
 void WordMap::MergeWordMaps(WordMap subMap)
 {
-	map<string, long>::const_iterator map_it = subMap.GetMap().begin();
-	while (map_it != subMap.GetMap().end())
+	map<string, long> smap = subMap.GetMap();
+	map<string, long>::const_iterator map_it = smap.begin();
+	while (map_it != smap.end())
 	{
 		this -> RecordWord(map_it -> first, map_it -> second);
 		map_it ++;

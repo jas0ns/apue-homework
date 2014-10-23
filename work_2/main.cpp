@@ -110,7 +110,6 @@ void traversalDir(string dirPath)
 			else
 			{
 				createWriteProc();
-				sleep(111111);
 				fpi = 1;
 				strcpy(filesPathes[0], curPath);
 				filesTotalSize = buff.st_size;
@@ -136,13 +135,13 @@ void createWriteProc()
 		{
    			curWordMap = GenerateWordMapByFileName(filesPathes[i]);
 			totalWordMap.MergeWordMaps(curWordMap);
-			cout << filesPathes[i] << endl; 
-	}			
-		cout << "write begin" << endl;
+		}
+	
 		ssize_t n;
 		if ((n = write(fd[1], &totalWordMap, sizeof(WordMap *))) == -1)
 			err("write WordMap* to the pipe error");
 		
+		cout << "write done" << endl;
 		if (close(fd[1] == -1)) err("child close pipe write port error");
 	
 		exit(0);
