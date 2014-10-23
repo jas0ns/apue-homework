@@ -12,7 +12,6 @@ WordMap GenerateWordMapByFileName(const char *fileName)
 	int fd;
 	char buff[BUFFSIZE];
 	WordMap wordMap;
-	//cout << fileName << endl;
 	if ((fd = open(fileName, O_RDONLY)) == -1)
 		err("open file error");
 	

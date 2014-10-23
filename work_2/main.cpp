@@ -22,8 +22,11 @@ int fpi = 0;
 
 int main(int argc, char **argv)
 {
-	//WordMap wordMap = GenerateWordMapByFileName("./test.txt");
 	WordMap *totalWordMap = 0;
+	for (int i=0; i<10; i++)
+	{
+		filesPathes[i] = new char[MAXLOFFP];
+	}
 
 	if (pipe(fd) == -1)
 		err("create pipe error");
@@ -101,14 +104,15 @@ void traversalDir(string dirPath)
 			strcpy(curPath, filePath.c_str());
 			if (filesTotalSize < MAXFILESIZEPERPROC)
 			{
-				filesPathes[fpi++] = curPath;
+				strcpy(filesPathes[fpi++], curPath);
 				filesTotalSize += buff.st_size;
 			}
 			else
 			{
 				createWriteProc();
+				sleep(111111);
 				fpi = 1;
-				filesPathes[0] = curPath;
+				strcpy(filesPathes[0], curPath);
 				filesTotalSize = buff.st_size;
 			}
 		}
@@ -126,19 +130,14 @@ void createWriteProc()
 			
 	if (pid == 0)  // child
 	{
-//		if (close(fd[0]) == -1) err("child close pipe read port error");
-		WordMap *curWordMap = 0;
-	 	WordMap *totalWordMap = 0;
+		WordMap curWordMap;
+	 	WordMap totalWordMap;
 		for (int i=0; i<fpi; i++)
 		{
-   			*curWordMap = GenerateWordMapByFileName(filesPathes[i]);
-			if (totalWordMap == 0)
-	    		totalWordMap = curWordMap;
-			else
-				(*totalWordMap).MergeWordMaps(*curWordMap);
-		}
-					
-		cout << "&totalWordMap is: "  << &totalWordMap << endl;
+   			curWordMap = GenerateWordMapByFileName(filesPathes[i]);
+			totalWordMap.MergeWordMaps(curWordMap);
+			cout << filesPathes[i] << endl; 
+	}			
 		cout << "write begin" << endl;
 		ssize_t n;
 		if ((n = write(fd[1], &totalWordMap, sizeof(WordMap *))) == -1)

@@ -9,7 +9,7 @@ class WordMap {
 
 public:
 	WordMap();
-	void RecordWord(string, int time = 1);
+	void RecordWord(string, long time = 1);
 	void MergeWordMaps(WordMap subMap);
 	map<string, long> GetMap();
 
