@@ -28,16 +28,21 @@ int main(int argc, char **argv)
 	
 	if (pid == 0)  // child
 	{
-		if (close(fd[1] == -1)) err("parent close pipe write port error");
-
+		if (close(fd[1] == -1)) err("read process close pipe write port error");
 		while(1)
 		{
 			WordMap *curWordMap = 0;
 			int n;
 			if ((n = read(fd[0], &curWordMap, sizeof(WordMap *))) == -1)
+			{
+				cout << "read end" << endl;
+				cout << n << endl;
 				err("read pipe error");
+			}
 			else if (n == sizeof(WordMap *))
 			{
+				cout << "curWordMap address is: " << curWordMap << endl;
+				
 				if (totalWordMap == 0)
 					totalWordMap = curWordMap;
 				else
@@ -49,6 +54,7 @@ int main(int argc, char **argv)
 	}
 	else // parent
 	{
+		if (close(fd[0]) == -1) err("write process close pipe read port error");
 		traversalDir(DIRPATH);
 	}
 
@@ -100,14 +106,14 @@ void traversalDir(string dirPath)
 			}
 			else
 			{
-				cout << "currnet filesTotalSize is: " << filesTotalSize << endl;
+		//		cout << "currnet filesTotalSize is: " << filesTotalSize << endl;
 				pid_t pid;
 				if ((pid = fork()) < 0)
 					err("create write process error");
 			
 				if (pid == 0)  // child
 				{
-					if (close(fd[0]) == -1) err("child close pipe read port error");
+		//			if (close(fd[0]) == -1) err("child close pipe read port error");
 					WordMap *curWordMap = 0;
 			   	 	WordMap *totalWordMap = 0;
 			   		for (int i=0; i<fpi; i++)
@@ -119,9 +125,12 @@ void traversalDir(string dirPath)
 				   			(*totalWordMap).MergeWordMaps(*curWordMap);
 					}
 					
-					if (write(fd[1], &totalWordMap, sizeof(WordMap *)) == -1)
+					ssize_t n;
+					if ((n =write(fd[1], &totalWordMap, sizeof(WordMap *))) == -1)
 						err("write WordMap* to the pipe error");
-					
+					cout << n << endl;
+
+					if (close(fd[1] == -1)) err("child close pipe write port error");
 					exit(0);
 				}
 				fpi = 0;
