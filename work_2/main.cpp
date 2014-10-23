@@ -13,7 +13,13 @@ using namespace std;
 #define MAXLOFFP 4096 //max length of file path
 
 void traversalDir(string);
+void createWriteProc();
+
 int fd[2];
+char *filesPathes[10];
+unsigned long filesTotalSize;
+int fpi = 0;
+
 int main(int argc, char **argv)
 {
 	//WordMap wordMap = GenerateWordMapByFileName("./test.txt");
@@ -56,15 +62,11 @@ int main(int argc, char **argv)
 	{
 		if (close(fd[0]) == -1) err("write process close pipe read port error");
 		traversalDir(DIRPATH);
+		if (fpi > 0) // handle the last few files in filesPathes[]
+			createWriteProc();
 	}
-
-
 	return 0;
 }
-
-char *filesPathes[10];
-unsigned long filesTotalSize;
-int fpi = 0;
 
 void traversalDir(string dirPath)
 {
@@ -94,53 +96,19 @@ void traversalDir(string dirPath)
 			string filePath(dirPath + "/" + ent->d_name);
 			if (stat(filePath.c_str(), &buff) == -1)
 				err("get file stat error");
-		//	cout << "file size is: " << buff.st_size << endl;
 			
+			char curPath[MAXLOFFP];
+			strcpy(curPath, filePath.c_str());
 			if (filesTotalSize < MAXFILESIZEPERPROC)
 			{
-				char curPath[MAXLOFFP];
-				strcpy(curPath, filePath.c_str());
-		//		cout << "filePath is: " << curPath << endl;
 				filesPathes[fpi++] = curPath;
 				filesTotalSize += buff.st_size;
 			}
 			else
 			{
-		//		cout << "currnet filesTotalSize is: " << filesTotalSize << endl;
-				pid_t pid;
-				if ((pid = fork()) < 0)
-					err("create write process error");
-			
-				if (pid == 0)  // child
-				{
-		//			if (close(fd[0]) == -1) err("child close pipe read port error");
-					WordMap *curWordMap = 0;
-			   	 	WordMap *totalWordMap = 0;
-			   		for (int i=0; i<fpi; i++)
-					{
-						cout << "fpi = " << fpi << " i = " << i << endl;
-						cout << "filesPathes[i] = " << filesPathes[i] << endl;
-		    			*curWordMap = GenerateWordMapByFileName(filesPathes[i]);
-						if (totalWordMap == 0)
-				    		totalWordMap = curWordMap;
-				   	 	else
-				   			(*totalWordMap).MergeWordMaps(*curWordMap);
-					}
-					
-					cout << "&totalWordMap is: "  << &totalWordMap << endl;
-					cout << "write begin" << endl;
-					ssize_t n;
-					if ((n = write(fd[1], &totalWordMap, sizeof(WordMap *))) == -1)
-						err("write WordMap* to the pipe error");
-					cout << n << endl;
-
-					if (close(fd[1] == -1)) err("child close pipe write port error");
-					exit(0);
-				}
-				fpi = 0;
-				char curPath[MAXLOFFP];
-				strcpy(curPath, filePath.c_str());
-				filesPathes[fpi] = curPath;
+				createWriteProc();
+				fpi = 1;
+				filesPathes[0] = curPath;
 				filesTotalSize = buff.st_size;
 			}
 		}
@@ -150,4 +118,34 @@ void traversalDir(string dirPath)
 		err("closedir error");
 }
 
-
+void createWriteProc()
+{
+	pid_t pid;
+	if ((pid = fork()) < 0)
+		err("create write process error");
+			
+	if (pid == 0)  // child
+	{
+//		if (close(fd[0]) == -1) err("child close pipe read port error");
+		WordMap *curWordMap = 0;
+	 	WordMap *totalWordMap = 0;
+		for (int i=0; i<fpi; i++)
+		{
+   			*curWordMap = GenerateWordMapByFileName(filesPathes[i]);
+			if (totalWordMap == 0)
+	    		totalWordMap = curWordMap;
+			else
+				(*totalWordMap).MergeWordMaps(*curWordMap);
+		}
+					
+		cout << "&totalWordMap is: "  << &totalWordMap << endl;
+		cout << "write begin" << endl;
+		ssize_t n;
+		if ((n = write(fd[1], &totalWordMap, sizeof(WordMap *))) == -1)
+			err("write WordMap* to the pipe error");
+		
+		if (close(fd[1] == -1)) err("child close pipe write port error");
+	
+		exit(0);
+	}
+}
