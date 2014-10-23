@@ -118,6 +118,8 @@ void traversalDir(string dirPath)
 			   	 	WordMap *totalWordMap = 0;
 			   		for (int i=0; i<fpi; i++)
 					{
+						cout << "fpi = " << fpi << " i = " << i << endl;
+						cout << "filesPathes[i] = " << filesPathes[i] << endl;
 		    			*curWordMap = GenerateWordMapByFileName(filesPathes[i]);
 						if (totalWordMap == 0)
 				    		totalWordMap = curWordMap;
@@ -125,8 +127,10 @@ void traversalDir(string dirPath)
 				   			(*totalWordMap).MergeWordMaps(*curWordMap);
 					}
 					
+					cout << "&totalWordMap is: "  << &totalWordMap << endl;
+					cout << "write begin" << endl;
 					ssize_t n;
-					if ((n =write(fd[1], &totalWordMap, sizeof(WordMap *))) == -1)
+					if ((n = write(fd[1], &totalWordMap, sizeof(WordMap *))) == -1)
 						err("write WordMap* to the pipe error");
 					cout << n << endl;
 
