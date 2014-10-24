@@ -44,13 +44,11 @@ int main(int argc, char **argv)
 			int n;
 			if ((n = read(fd[0], &curWordMap, sizeof(WordMap *))) == -1)
 			{
-				cout << "read end" << endl;
-				cout << n << endl;
 				err("read pipe error");
 			}
 			else if (n == sizeof(WordMap *))
 			{
-				cout << "curWordMap address is: " << curWordMap << endl;
+				cout << "read curWordMap address is: " << curWordMap << endl;
 				
 				if (totalWordMap == 0)
 					totalWordMap = curWordMap;
@@ -74,7 +72,7 @@ int main(int argc, char **argv)
 void traversalDir(string dirPath)
 {
 	DIR *dir;
-	struct dirent *ent;
+ 	struct dirent *ent;
 
 	if ((dir = opendir(dirPath.c_str())) == NULL)
 		err("opendir error");
@@ -137,11 +135,12 @@ void createWriteProc()
 			totalWordMap.MergeWordMaps(curWordMap);
 		}
 	
+		WordMap *pw = &curWordMap;
 		ssize_t n;
-		if ((n = write(fd[1], &totalWordMap, sizeof(WordMap *))) == -1)
+		if ((n = write(fd[1], &pw, sizeof(WordMap *))) == -1)
 			err("write WordMap* to the pipe error");
 		
-		cout << "write done" << endl;
+		cout << "write wordMap address is " << pw << endl;
 		if (close(fd[1] == -1)) err("child close pipe write port error");
 	
 		exit(0);
