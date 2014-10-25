@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <string>
+#include <time.h>
 using namespace std;
 
 #include "WFreqCounter.h"
@@ -15,16 +16,20 @@ using namespace std;
 void traversalDir(string);
 void createWriteProc();
 class TypeForTran {
-	TypeForTran(){}
+public:
+	TypeForTran()
+	{
+		memset(str, 0, sizeof(char[56]));
+	}
 	
-	TypeForTran(long time, char *str)
+	TypeForTran(long time, const char *str)
 	{
 		this->time = time;
 		strcpy(this->str, str);
 	}
 	long time;
-	char str[56] = {0};
-}
+	char str[56];
+};
 
 
 int fd[2];
@@ -34,6 +39,9 @@ int fpi = 0;
 
 int main(int argc, char **argv)
 {
+	time_t start,end;
+	start = time(NULL);
+
 	WordMap *totalWordMap = 0;
 	for (int i=0; i<10; i++)
 	{
@@ -49,7 +57,8 @@ int main(int argc, char **argv)
 	
 	if (pid == 0)  // child
 	{
-		if (close(fd[1] == -1)) err("read process close pipe write port error");
+		if (close(fd[1]) == -1) err("read process close pipe write port error");
+		WordMap totalWordMap;
 		while(1)
 		{
 			TypeForTran tft;
@@ -58,18 +67,19 @@ int main(int argc, char **argv)
 			{
 				err("read pipe error");
 			}
-			else if (n == sizeof(WordMap *))
+			else if (n == sizeof(TypeForTran))
 			{
-				cout << "read curWordMap address is: " << curWordMap << endl;
-				
-				if (totalWordMap == 0)
-					totalWordMap = curWordMap;
-				else
-				{
-					(*totalWordMap).MergeWordMaps(*curWordMap);
-				}
+				totalWordMap.RecordWord(tft.str, tft.time);
+			}
+			else if (n == 0)
+			{	
+				end = time(NULL);
+				cout << endl << "total time is "
+					 << difftime(end, start) << "s" << endl;
+				break;
 			}
 		}
+		if (close(fd[0]) == -1) err("read process close pipe read port error");
 	}
 	else // parent
 	{
@@ -77,6 +87,7 @@ int main(int argc, char **argv)
 		traversalDir(DIRPATH);
 		if (fpi > 0) // handle the last few files in filesPathes[]
 			createWriteProc();
+		if (close(fd[1]) == -1) err("parent precess close pipe write port error");
 	}
 	return 0;
 }
@@ -98,13 +109,11 @@ void traversalDir(string dirPath)
 				continue;
 			else
 			{
-			//	cout << "dir name is " << ent->d_name << endl;
 				traversalDir(dirPath + "/" + ent->d_name);
 			}
 		}
 		else if (ent->d_type & DT_REG)
 		{
-		//	cout << "file name is " << ent->d_name << endl;	
 			struct stat buff;
 			string filePath(dirPath + "/" + ent->d_name);
 			if (stat(filePath.c_str(), &buff) == -1)
@@ -151,14 +160,14 @@ void createWriteProc()
 		map<string, long>::const_iterator map_it = tmap.begin();
 		while (map_it != tmap.end())
 		{
-			TypeForTran *tft = new TypeForTran(map_it->second, map_it->first);
+			TypeForTran *tft = new TypeForTran(map_it->second, map_it->first.c_str());
 			if (write(fd[1], tft, sizeof(TypeForTran)) == -1)
 				err("write to pipe error");
 			map_it ++;
 			delete tft;
 		}
 
-		if (close(fd[1] == -1)) err("child close pipe write port error");
+		if (close(fd[1]) == -1) err("write process close pipe write port error");
 	
 		exit(0);
 	}
