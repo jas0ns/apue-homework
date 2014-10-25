@@ -14,6 +14,18 @@ using namespace std;
 
 void traversalDir(string);
 void createWriteProc();
+class TypeForTran {
+	TypeForTran(){}
+	
+	TypeForTran(long time, char *str)
+	{
+		this->time = time;
+		strcpy(this->str, str);
+	}
+	long time;
+	char str[56] = {0};
+}
+
 
 int fd[2];
 char *filesPathes[10];
@@ -40,9 +52,9 @@ int main(int argc, char **argv)
 		if (close(fd[1] == -1)) err("read process close pipe write port error");
 		while(1)
 		{
-			WordMap *curWordMap = 0;
+			TypeForTran tft;
 			int n;
-			if ((n = read(fd[0], &curWordMap, sizeof(WordMap *))) == -1)
+			if ((n = read(fd[0], &tft, sizeof(TypeForTran))) == -1)
 			{
 				err("read pipe error");
 			}
@@ -135,12 +147,17 @@ void createWriteProc()
 			totalWordMap.MergeWordMaps(curWordMap);
 		}
 	
-		WordMap *pw = &curWordMap;
-		ssize_t n;
-		if ((n = write(fd[1], &pw, sizeof(WordMap *))) == -1)
-			err("write WordMap* to the pipe error");
-		
-		cout << "write wordMap address is " << pw << endl;
+		map<string, long> tmap = totalWordMap.GetMap();
+		map<string, long>::const_iterator map_it = tmap.begin();
+		while (map_it != tmap.end())
+		{
+			TypeForTran *tft = new TypeForTran(map_it->second, map_it->first);
+			if (write(fd[1], tft, sizeof(TypeForTran)) == -1)
+				err("write to pipe error");
+			map_it ++;
+			delete tft;
+		}
+
 		if (close(fd[1] == -1)) err("child close pipe write port error");
 	
 		exit(0);
