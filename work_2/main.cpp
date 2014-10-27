@@ -76,6 +76,15 @@ int main(int argc, char **argv)
 				end = time(NULL);
 				cout << endl << "total time is "
 					 << difftime(end, start) << "s" << endl;
+				
+				map<string, long> tmap = totalWordMap.GetMap();
+				map<string, long>::const_iterator map_it = tmap.begin();
+				while (map_it != tmap.end())
+				{
+					cout << map_it->first << "  " << map_it->second << endl;
+					map_it ++;
+				}
+
 				break;
 			}
 		}
