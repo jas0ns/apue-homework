@@ -17,6 +17,8 @@ public:
 	CalThreadPool();
 
 	void PlusThreadRun();
+	void ClosePipeWPort();
+	void ClosePipeRPort();
 
 	int GetPlusPipeWfd();
 	int GetSubPipeWfd();
