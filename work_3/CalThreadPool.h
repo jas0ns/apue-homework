@@ -4,16 +4,19 @@
 #include <iostream>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
+#include <pthread.h>
+
+#include "Request.h"
+using namespace std;
 
 #define MAXNUM_RESULTPIPE 5
 
 class CalThreadPool {
 public:
-	CalThreadPool(){}
-	SetPipefd(int);
-	
-	PlusThreadRun();
-	
+	CalThreadPool();
+
+	void PlusThreadRun();
 
 	int GetPlusPipeWfd();
 	int GetSubPipeWfd();
@@ -26,9 +29,6 @@ private:
 	int subfd[2];
 	int multfd[2];
 	int divfd[2];
-	
-	int fdCount;
-	int resultPipesfd[MAXNUM_RESULTPIPE];
-}
+};
 
 #endif
