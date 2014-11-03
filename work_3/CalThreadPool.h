@@ -16,9 +16,14 @@ class CalThreadPool {
 public:
 	CalThreadPool();
 
-	void PlusThreadRun();
+	pthread_t PlusThreadRun();
+	pthread_t SubThreadRun();
+	pthread_t MultThreadRun();
+	pthread_t DivThreadRun();
+	
 	void ClosePipeWPort();
 	void ClosePipeRPort();
+
 
 	int GetPlusPipeWfd();
 	int GetSubPipeWfd();
