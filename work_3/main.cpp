@@ -4,10 +4,10 @@
 
 #include "CalThreadPool.h"
 
-#define PLUSTHREADNUMBER 1
-#define SUBTHREADNUMBER 1
-#define MULTTHREADNUMBER 1
-#define DIVTHREADNUMBER 1
+#define PLUSTHREADNUMBER 5
+#define SUBTHREADNUMBER 3
+#define MULTTHREADNUMBER 2
+#define DIVTHREADNUMBER 2
 
 using namespace std;
 
@@ -140,7 +140,6 @@ int main(int argc, char **argv)
 			pthread_join(multReqtids[i], NULL);
 		for (int i=0; i<DIVTHREADNUMBER; i++)
 			pthread_join(divReqtids[i], NULL);
-		
 	}
 	return 0;
 }
@@ -165,14 +164,14 @@ void *PullPlusRequest(void *args)
 			break;
 		}
 		else
-	//		cout << "receive result : " << result << endl;
+		{}
 	}
 }
 
 void *PullSubRequest(void *args)
 {
 	int _args[3] = {((int *)args)[0], ((int *)args)[1], ((int *)args)[2]};
-	for(int i=0; i<100; i++)
+	for(int i=0; i<10000; i++)
 	{
 		Request request(i, 100, _args[2]);
 		if (write(_args[0], &request, sizeof(Request)) == -1)
@@ -189,14 +188,14 @@ void *PullSubRequest(void *args)
 			break;
 		}
 		else
-	//		cout << "receive result : " << result << endl;
+		{}
 	}
 }
 
 void *PullMultRequest(void *args)
 {
 	int _args[3] = {((int *)args)[0], ((int *)args)[1], ((int *)args)[2]};
-	for(int i=0; i<100; i++)
+	for(int i=0; i<10000; i++)
 	{
 		Request request(i, 100, _args[2]);
 		if (write(_args[0], &request, sizeof(Request)) == -1)
@@ -213,14 +212,14 @@ void *PullMultRequest(void *args)
 			break;
 		}
 		else
-	//		cout << "receive result : " << result << endl;
+		{}
 	}
 }
 
 void *PullDivRequest(void *args)
 {
 	int _args[3] = {((int *)args)[0], ((int *)args)[1], ((int *)args)[2]};
-	for(int i=0; i<100; i++)
+	for(int i=0; i<10000; i++)
 	{
 		Request request(i, 100, _args[2]);
 		if (write(_args[0], &request, sizeof(Request)) == -1)
@@ -237,7 +236,7 @@ void *PullDivRequest(void *args)
 			break;
 		}
 		else
-	//		cout << "receive div result : " << result << endl;
+		{}
 	}
 }
 
