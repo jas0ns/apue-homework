@@ -7,13 +7,14 @@ void *DivRequestHandler(void *arg);
 
 CalThreadPool::CalThreadPool()
 {
+	pthread_mutex_init(&(this->pluslock), NULL);
 }
 
 pthread_t CalThreadPool::PlusThreadRun()
 {
 	pthread_t plustid;
 	int err;
-	err = pthread_create(&plustid, NULL, PlusRequestHandler, this->plusfd);
+	err = pthread_create(&plustid, NULL, PlusRequestHandler, this);
 	if (err != 0)
 		cout << strerror(err) << " : plus thread create error!"
 			<< endl;
@@ -24,7 +25,7 @@ pthread_t CalThreadPool::SubThreadRun()
 {
 	pthread_t subtid;
 	int err;
-	err = pthread_create(&subtid, NULL, SubRequestHandler, this->subfd);
+	err = pthread_create(&subtid, NULL, SubRequestHandler, NULL);
 	if (err != 0)
 		cout << strerror(err) << " : sub thread create error!"
 			<< endl;
@@ -35,7 +36,7 @@ pthread_t CalThreadPool::MultThreadRun()
 {
 	pthread_t multtid;
 	int err;
-	err = pthread_create(&multtid, NULL, MultRequestHandler, this->multfd);
+	err = pthread_create(&multtid, NULL, MultRequestHandler, NULL);
 	if (err != 0)
 		cout << strerror(err) << " : mult thread create error!"
 			<< endl;
@@ -46,7 +47,7 @@ pthread_t CalThreadPool::DivThreadRun()
 {
 	pthread_t divtid;
 	int err;
-	err = pthread_create(&divtid, NULL, DivRequestHandler, this->divfd);
+	err = pthread_create(&divtid, NULL, DivRequestHandler, NULL);
 	if (err != 0)
 		cout << strerror(err) << " : div thread create error!"
 			<< endl;
@@ -55,24 +56,14 @@ pthread_t CalThreadPool::DivThreadRun()
 
 void *PlusRequestHandler(void *arg)
 {
-	int plusfd = *(int *)arg;
+	CalThreadPool *calThreadPool = (CalThreadPool *)arg;
 	while(1)
 	{
-		Request request;
+		Request request = (*calThreadPool).GetPlusRequest();	
 		double result = 0;
-		int n;
-		if((n = read(plusfd, &request, sizeof(Request))) == -1)
-			perror("read plus pipe to x error");
-		else if (n == 0)
-		{
-			if (close(plusfd) == -1)
-				perror("close plue pipe error");
-			break;
-		}
-
+		cout << "thread" << request.qi+1 << " "<< request.x << " " << request.y << endl;
 		result = request.x + request.y;
-		if(write(request.resultPipeWfd, &result, sizeof(double)) == -1)
-	 		perror("write result to pipe error");
+		(*calThreadPool).resultQueues[request.qi].push(result);
 	}
 }
 
@@ -84,18 +75,8 @@ void *SubRequestHandler(void *arg)
 		Request request;
 		double result = 0;
 		int n;
-		if((n = read(subfd, &request, sizeof(Request))) == -1)
-			perror("read sub pipe to x error");
-		else if (n == 0)
-		{
-			if (close(subfd) == -1)
-				perror("close sub pipe error");
-			break;
-		}
 
 		result = request.x - request.y;
-		if(write(request.resultPipeWfd, &result, sizeof(double)) == -1)
-	 		perror("write result to pipe error");
 	}
 }
 
@@ -107,18 +88,8 @@ void *MultRequestHandler(void *arg)
 		Request request;
 		double result = 0;
 		int n;
-		if((n = read(multfd, &request, sizeof(Request))) == -1)
-			perror("read mult pipe to x error");
-		else if (n == 0)
-		{
-			if (close(multfd) == -1)
-				perror("close mult pipe error");
-			break;
-		}
 
 		result = request.x * request.y;
-		if(write(request.resultPipeWfd, &result, sizeof(double)) == -1)
-	 		perror("write result to pipe error");
 	}
 }
 
@@ -130,18 +101,58 @@ void *DivRequestHandler(void *arg)
 		Request request;
 		double result = 0;
 		int n;
-		if((n = read(divfd, &request, sizeof(Request))) == -1)
-			perror("read div pipe to x error");
-		else if (n == 0)
-		{
-			if (close(divfd) == -1)
-				perror("close div pipe error");
-			break;
-		}
 
 		result = request.x / request.y;
-		if(write(request.resultPipeWfd, &result, sizeof(double)) == -1)
-	 		perror("write result to pipe error");
 	}
 }
 
+void CalThreadPool::AddPlusRequest(Request request)
+{
+	pthread_mutex_lock(&pluslock);
+	this->plusRequestQ.push(request);
+	pthread_mutex_unlock(&pluslock);
+}
+
+void CalThreadPool::AddSubRequest(Request request)
+{
+	this->subRequestQ.push(request);
+}
+
+void CalThreadPool::AddMultRequest(Request request)
+{
+	this->multRequestQ.push(request);
+}
+
+void CalThreadPool::AddDivRequest(Request request)
+{
+	this->divRequestQ.push(request);
+}
+
+Request CalThreadPool::GetPlusRequest()
+{
+	while(this->plusRequestQ.empty()) {} 
+	Request request = this->plusRequestQ.front();
+	this->plusRequestQ.pop();
+	return request;
+}
+
+Request CalThreadPool::GetSubRequest()
+{
+	Request request = this->subRequestQ.front();
+	this->subRequestQ.pop();
+	return request;
+}
+
+Request CalThreadPool::GetMultRequest()
+{
+	Request request = this->multRequestQ.front();
+	this->multRequestQ.pop();
+	return request;
+}
+
+Request CalThreadPool::GetDivRequest()
+{
+	Request request = this->divRequestQ.front();
+	this->divRequestQ.pop();
+	return request;
+}

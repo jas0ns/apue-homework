@@ -6,13 +6,11 @@ class Request {
 public:
 	Request(){}
 
-	Request(double x, double y, int fd)
-		:x(x),y(y),resultPipeWfd(fd) {}
+	Request(double x, double y, int qi):x(x),y(y),qi(qi) {}
 
 	double x;
 	double y;
-	int resultPipeWfd;
-	long placeholder;
+	int qi;
 };
 
 #endif
