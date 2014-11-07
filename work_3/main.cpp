@@ -19,50 +19,11 @@ void *PullDivRequest(void *arg);
 int main(int argc, char **argv)
 {
 	CalThreadPool calThreadPool;// include create request pipe
-
-	int plusWfd = calThreadPool.GetPlusPipeWfd();
-	int subWfd = calThreadPool.GetSubPipeWfd();
-	int multWfd = calThreadPool.GetMultPipeWfd();
-	int divWfd = calThreadPool.GetDivPipeWfd();
-	
-	// create result pipe
-	int plusResultpfds[PLUSTHREADNUMBER][2];
-	int subResultpfds[SUBTHREADNUMBER][2];
-	int multResultpfds[MULTTHREADNUMBER][2];
-	int divResultpfds[DIVTHREADNUMBER][2];
-	for (int i=0; i<PLUSTHREADNUMBER; i++)
-		if(pipe(plusResultpfds[i]) == -1)
-			perror("create plus result pipe error");
-	for (int i=0; i<SUBTHREADNUMBER; i++)
-		if(pipe(subResultpfds[i]) == -1)
-			perror("create sub result pipe error");
-	for (int i=0; i<MULTTHREADNUMBER; i++)
-		if(pipe(multResultpfds[i]) == -1)
-			perror("create mult result pipe error");
-	for (int i=0; i<DIVTHREADNUMBER; i++)
-		if(pipe(divResultpfds[i]) == -1)
-			perror("create div result pipe error");
-	
 	pid_t pid;
 	if ((pid = fork()) == -1)
 		perror("create request process error");
 	if (pid == 0) // calculator process
 	{
-		for (int i=0; i<PLUSTHREADNUMBER; i++)
-			if(close(plusResultpfds[i][0]) == -1)
-				perror("close plus result pipe read port error");
-		for (int i=0; i<SUBTHREADNUMBER; i++)
-			if(close(subResultpfds[i][0]) == -1)
-				perror("close sub result pipe read port error");
-		for (int i=0; i<MULTTHREADNUMBER; i++)
-			if(close(multResultpfds[i][0]) == -1)
-				perror("close mult result pipe read port error");
-		for (int i=0; i<DIVTHREADNUMBER; i++)
-			if(close(divResultpfds[i][0]) == -1)
-				perror("close div result pipe read port error");
-
-		calThreadPool.ClosePipeWPort();
-
 		pthread_t plustid = calThreadPool.PlusThreadRun(); // plus service thread
 		pthread_t subtid = calThreadPool.SubThreadRun(); // sub service thread
 		pthread_t multtid = calThreadPool.MultThreadRun(); // mult service thread
@@ -75,20 +36,6 @@ int main(int argc, char **argv)
 	}
 	else // request process
 	{
-		for (int i=0; i<PLUSTHREADNUMBER; i++)
-			if(close(plusResultpfds[i][1]) == -1)
-				perror("close plus result pipe write port error");
-		for (int i=0; i<SUBTHREADNUMBER; i++)
-			if(close(subResultpfds[i][1]) == -1)
-				perror("close sub result pipe write port error");
-		for (int i=0; i<MULTTHREADNUMBER; i++)
-			if(close(multResultpfds[i][1]) == -1)
-				perror("close mult result pipe write port error");
-		for (int i=0; i<DIVTHREADNUMBER; i++)
-			if(close(divResultpfds[i][1]) == -1)
-				perror("close div result pipe write port error");
-		calThreadPool.ClosePipeRPort();
-			
 		pthread_t plusReqtids[PLUSTHREADNUMBER];
 		pthread_t subReqtids[SUBTHREADNUMBER];
 		pthread_t multReqtids[MULTTHREADNUMBER];

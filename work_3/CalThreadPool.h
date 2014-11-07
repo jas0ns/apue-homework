@@ -21,21 +21,7 @@ public:
 	pthread_t MultThreadRun();
 	pthread_t DivThreadRun();
 	
-	void ClosePipeWPort();
-	void ClosePipeRPort();
-
-
-	int GetPlusPipeWfd();
-	int GetSubPipeWfd();
-	int GetMultPipeWfd();
-	int GetDivPipeWfd();
-
-
 private:
-	int plusfd[2];
-	int subfd[2];
-	int multfd[2];
-	int divfd[2];
 };
 
 #endif
