@@ -22,11 +22,11 @@ void err(const char *errMsg)
 
 int main(int argc, char **agrv)
 {
-	Tree tree = generateRandomTree();
+	//Tree tree = generateRandomTree();
 	//printTree(tree);
-	saveTree(tree);
-	readTree();
-	//printTree(readTree());
+	//saveTree(tree);
+	//readTree();
+	printTree(readTree());
 	return 0;
 }
 
@@ -49,7 +49,6 @@ void printTree(Tree tree)
 				tnq.push(parent->GetChildren()[i]);
 				count ++;
 			}
-
 		}
 		tnq.pop();
 	}
@@ -133,7 +132,7 @@ Tree readTree()
 		tnq.pop();
 	}
 
-	cout << "read node count is : " << nodecount << endl;
+//	cout << "read node count is : " << nodecount << endl;
 	if (close(fd) < 0 )
 		err("close file error!");
 
@@ -176,6 +175,6 @@ Tree generateRandomTree()
 		}
 		tnq.pop();
 	}
-	cout << "save node count is : " << nodecount << endl; 
+//	cout << "save node count is : " << nodecount << endl; 
 	return tree;
 }

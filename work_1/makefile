@@ -1,3 +1,5 @@
+make : all
+
 TNode.o : TNode.cpp TNode.h
 	g++ -c TNode.cpp
 Tree.o : Tree.cpp Tree.h
